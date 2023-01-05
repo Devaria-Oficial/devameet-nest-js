@@ -41,4 +41,8 @@ export class UserService {
 
         return null;
     }
+
+    async getUserById(id:string){
+        return await this.userModel.findById(id);
+    }
 }
