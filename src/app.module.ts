@@ -5,13 +5,15 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards/jwt.guard';
 import { UserModule } from './user/user.module';
+import { MeetModule } from './meet/meet.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
     MongooseModule.forRoot(process.env.DATABASE_URL),
     AuthModule,
-    UserModule
+    UserModule,
+    MeetModule
   ],
   controllers: [],
   providers: [
