@@ -24,6 +24,14 @@ export class MeetController {
         }) as GetMeetDto);
     }
 
+    @Get(':id')
+    async getMeetById(@Request() req,  @Param() params){
+        const { userId } = req?.user;
+        const { id } = params;
+
+        return await this.service.getMeetById(id, userId);
+    }
+
     @Post()
     async createMeet(@Request() req, @Body() dto: CreateMeetDto){
         const { userId } = req?.user;
