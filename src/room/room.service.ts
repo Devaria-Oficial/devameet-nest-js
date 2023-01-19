@@ -62,7 +62,7 @@ export class RoomService {
             user,
             meet,
             name: user.name,
-            avatar: user.avatar
+            avatar: user.avatar || 'avatar_01'
         }
 
         const usersInRoom = await this.positionModel.find({meet});

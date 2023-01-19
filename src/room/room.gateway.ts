@@ -7,15 +7,15 @@ import { UpdateUserPositionDto } from './dtos/updateposition.dto';
 import { ToglMuteDto } from './dtos/toglMute.dto';
 
 type ActiveSocketType = {
-  room:String; 
-  id:string; 
-  userId:string;
+  room: String;
+  id: string;
+  userId: string;
 }
 
-@WebSocketGateway({ cors: true})
+@WebSocketGateway({ cors: true })
 export class RoomGateway implements OnGatewayInit, OnGatewayDisconnect {
-  
-  constructor(private readonly service:RoomService){}
+
+  constructor(private readonly service: RoomService) { }
 
   @WebSocketServer() wss: Server;
 
@@ -27,14 +27,14 @@ export class RoomGateway implements OnGatewayInit, OnGatewayDisconnect {
       socket => socket.id === client.id
     );
 
-    if(!existingOnSocket) return;
+    if (!existingOnSocket) return;
 
     this.activeSockets = this.activeSockets.filter(
       socket => socket.id !== client.id
     );
 
     await this.service.deleteUsersPosition(client.id);
-    client.broadcast.emit(`${existingOnSocket.room}-remove-user`, {socketId: client.id});
+    client.broadcast.emit(`${existingOnSocket.room}-remove-user`, { socketId: client.id });
 
     this.logger.debug(`Client: ${client.id} disconnected`);
   }
@@ -42,38 +42,38 @@ export class RoomGateway implements OnGatewayInit, OnGatewayDisconnect {
   afterInit(server: any) {
     this.logger.log('Gateway initialized');
   }
-  
+
   @SubscribeMessage('join')
-  async handleJoin (client: Socket, payload: JoinRoomDto){
-    const {link, userId} = payload;
+  async handleJoin(client: Socket, payload: JoinRoomDto) {
+    const { link, userId } = payload;
 
     const existingOnSocket = this.activeSockets.find(
       socket => socket.room === link && socket.id === client.id);
+
+    if (!existingOnSocket) {
+      this.activeSockets.push({ room: link, id: client.id, userId });
+
+      const dto = {
+        link,
+        userId,
+        x: 1,
+        y: 1,
+        orientation: 'front'
+      } as UpdateUserPositionDto
+
+      await this.service.updateUserPosition(client.id, dto);
+      client.broadcast.emit(`${link}-add-user`, { user: client.id });
+    }
     
-      if(!existingOnSocket){
-        this.activeSockets.push({room:link, id: client.id, userId});
+    const users = await this.service.listUsersPositionByLink(link);
+    this.wss.emit(`${link}-update-user-list`, { users });
 
-        const dto = {
-          link,
-          userId,
-          x: 2,
-          y: 2,
-          orientation: 'down'
-        } as UpdateUserPositionDto
-
-        await this.service.updateUserPosition(client.id, dto);
-        const users = await this.service.listUsersPositionByLink(link);
-
-        this.wss.emit(`${link}-update-user-list`, {users});
-        client.broadcast.emit(`${link}-add-user`, {user:client.id});
-      }
-
-      this.logger.debug(`Socket client: ${client.id} start to join room ${link}`);
+    this.logger.debug(`Socket client: ${client.id} start to join room ${link}`);
   }
 
   @SubscribeMessage('move')
-  async handleMove (client: Socket, payload: UpdateUserPositionDto){
-    const {link, userId, x, y, orientation} = payload;
+  async handleMove(client: Socket, payload: UpdateUserPositionDto) {
+    const { link, userId, x, y, orientation } = payload;
     const dto = {
       link,
       userId,
@@ -84,19 +84,19 @@ export class RoomGateway implements OnGatewayInit, OnGatewayDisconnect {
 
     await this.service.updateUserPosition(client.id, dto);
     const users = await this.service.listUsersPositionByLink(link);
-    this.wss.emit(`${link}-update-user-list`, {users});
+    this.wss.emit(`${link}-update-user-list`, { users });
   }
 
   @SubscribeMessage('toggl-mute-user')
-  async handleToglMute (_: Socket, payload: ToglMuteDto){
-    const {link} = payload;
+  async handleToglMute(_: Socket, payload: ToglMuteDto) {
+    const { link } = payload;
     await this.service.updateUserMute(payload);
     const users = await this.service.listUsersPositionByLink(link);
-    this.wss.emit(`${link}-update-user-list`, {users});
+    this.wss.emit(`${link}-update-user-list`, { users });
   }
 
   @SubscribeMessage('call-user')
-  async callUser (client: Socket, data: any){
+  async callUser(client: Socket, data: any) {
     this.logger.debug(`callUser: ${client.id} to: ${data.to}`);
     client.to(data.to).emit('call-made', {
       offer: data.offer,
@@ -105,7 +105,7 @@ export class RoomGateway implements OnGatewayInit, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('make-answer')
-  async makeAnswer (client: Socket, data: any){
+  async makeAnswer(client: Socket, data: any) {
     this.logger.debug(`makeAnswer: ${client.id} to: ${data.to}`);
     client.to(data.to).emit('answer-made', {
       answer: data.answer,
