@@ -21,7 +21,7 @@ export class RoomService {
     ) { }
 
     async getRoom(link: string) {
-        this.logger.debug(`getRoom - ${link}`);
+        //this.logger.debug(`getRoom - ${link}`);
 
         const meet = await this._getMeet(link);
         const objects = await this.objectModel.find({ meet });
@@ -35,19 +35,19 @@ export class RoomService {
     }
 
     async listUsersPositionByLink(link: string){
-        this.logger.debug(`listUsersPositionByLink - ${link}`);
+        //this.logger.debug(`listUsersPositionByLink - ${link}`);
 
         const meet = await this._getMeet(link);
         return await this.positionModel.find({meet});
     }
 
     async deleteUsersPosition(clientId: string){
-        this.logger.debug(`deleteUsersPosition - ${clientId}`);
+        //this.logger.debug(`deleteUsersPosition - ${clientId}`);
         return await this.positionModel.deleteMany({clientId});
     }
 
     async updateUserPosition(clientId: string, dto : UpdateUserPositionDto){
-        this.logger.debug(`listUsersPositionByLink - ${dto.link}`);
+        //this.logger.debug(`listUsersPositionByLink - ${dto.link}`);
 
         const meet = await this._getMeet(dto.link);
         const user = await this.userService.getUserById(dto.userId);
@@ -81,7 +81,7 @@ export class RoomService {
     }
 
     async updateUserMute(dto:ToglMuteDto){
-        this.logger.debug(`updateUserMute - ${dto.link} - ${dto.userId}`);
+        //this.logger.debug(`updateUserMute - ${dto.link} - ${dto.userId}`);
 
         const meet = await this._getMeet(dto.link);
         const user = await this.userService.getUserById(dto.userId);

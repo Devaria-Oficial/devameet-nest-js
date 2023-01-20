@@ -62,11 +62,15 @@ export class RoomGateway implements OnGatewayInit, OnGatewayDisconnect {
       } as UpdateUserPositionDto
 
       await this.service.updateUserPosition(client.id, dto);
-      client.broadcast.emit(`${link}-add-user`, { user: client.id });
+
     }
-    
+
     const users = await this.service.listUsersPositionByLink(link);
     this.wss.emit(`${link}-update-user-list`, { users });
+
+    if (!existingOnSocket) {
+      client.broadcast.emit(`${link}-add-user`, { user: client.id });
+    }
 
     this.logger.debug(`Socket client: ${client.id} start to join room ${link}`);
   }
